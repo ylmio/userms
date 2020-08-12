@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户录入系统</title>
+    <style>
+        #root{
+            margin: 50px auto;
+            width: 600px;
+        }
+        fieldset{
+            border: 1px solid purple;
+            margin-bottom: 20px;
+        }
+        fieldset input{
+            width: 200px;
+            height: 30px;
+            margin: 10px 0;
+            padding-left: 5px;
+        }
+        table{
+            width: 600px;
+            border: 2px solid purple;
+            text-align: center;
+        }
+        thead{
+            background-color: purple;color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<div id="root"></div>
+<!--核心库-->
+<script src="./../js/react.development.js"></script>
+<!--DOM相关-->
+<script src="./../js/react-dom.development.js"></script>
+<!--支持JSX-->
+<script src="./../js/babel.min.js"></script>
+<!--检测数据类型-->
+<script src="./../js/prop-types.js"></script>
+
+<script type="text/babel">
+    //父组件
+    class App extends React.Component{
+        constructor(props){
+           super(props);
+            this.state = {
+               studentArr : [
+                   {name:"周喜喜",sex:"女",age:21,phone:"15625656870"},
+                   {name:"王志南",sex:"男",age:28,phone:"18525653257"},
+                   {name:"唐淼",sex:"男",age:20,phone:"18745623124"},
+                   {name:"诸国符",sex:"男",age:27,phone:"13687456987"},
+                   {name:"刘熙",sex:"女",age:22,phone:"13938930645"},
+                   {name:"单默默",sex:"男",age:21,phone:"13789895656"},
+                   {name:"李度",sex:"女",age:21,phone:"15935478652"},
+               ],
+            };
+        };
+        /*根据索引删除一条数据*/
+        deleteFromArrWithIndex(index){
+            //删除
+            let {studentArr} = this.state;
+            studentArr.splice(index,1);
+
+            //更新状态
+            this.setState({
+                studentArr
+            });
+        };
+        /*插入一条用户记录*/
+        addUser(student){
+            //获取全部用户数据
+            let {studentArr} = this.state;
+            studentArr.push(student);
+            //更新状态
+            this.setState({
+                studentArr
+            });
+        };
+        render(){
+            return(
+                <div>
+                    <Add addUserFunc = {(e)=>this.addUser(e)}/>
+                    <List studentArr = {this.state.studentArr} deleteFrom = {(e)=>this.deleteFromArrWithIndex(e)}/>
+                </div>
+            )
+        }
+    }
+
+    //子组件-list 列表
+    class List extends React.Component{
+        //定义类型
+        static propTypes ={
+            studentArr : PropTypes.array.isRequired,
+            deleteFrom : PropTypes.func.isRequired
+        };
+        render(){
+            const {studentArr,deleteFrom} = this.props;
+            return(
+                <table>
+                   <thead>
+                        <tr>
+                            <td>姓名</td>
+                            <td>性别</td>
+                            <td>年龄</td>
+                            <td>手机</td>
+                            <td>删除</td>
+                        </tr>
+                   </thead>
+                    <tbody>
+                    {
+                        studentArr.map((stu,index)=>(
+                            <tr key={index}>
+                                <td>{stu.name}</td>
+                                <td>{stu.sex}</td>
+                                <td>{stu.age}</td>
+                                <td>{stu.phone}</td>
+                                <td>
+                                    <button onClick={()=>deleteFrom(index)}>删除</button>
+                                </td>
+                            </tr>
+                        ))
+                    }
+
+                    </tbody>
+                </table>
+            )
+        }
+    }
+
+    //子组件-add 添加
+    class Add extends React.Component{
+        //定义类型
+        static propTypes = {
+            addUserFunc : PropTypes.func.isRequired
+        };
+        constructor(props){
+            super(props);
+            //绑定 ref
+            this.userName = React.createRef();
+            this.userAge = React.createRef();
+            this.userGender = React.createRef();
+            this.userPhone = React.createRef();
+        };
+        render(){
+            return(
+                <fieldset>
+                    <legend>信息录入系统(React版)</legend>
+
+                        <div>
+                            <label>姓名：
+                                <input ref={this.userName} type="text" placeholder="请输入姓名"/>
+                            </label>
+                        </div>
+                        <div>
+                            <label>性别：
+                                <select ref={this.userGender}>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div>
+                            <label>年龄：
+                                <input ref={this.userAge} type="text" placeholder="请输入年龄"/>
+                            </label>
+                        </div>
+                        <div>
+                            <label>手机：
+                                <input ref={this.userPhone} type="text" placeholder="请输入联系方式"/>
+                            </label>
+                        </div>
+                        <div>
+                            <button onClick={()=>this._dealWithClick()}>创建新用户</button>
+                        </div>
+
+                </fieldset>
+            )
+        };
+        _dealWithClick(){
+            //获取表单用户数据
+            let name = this.userName.current.value;
+            let age = this.userAge.current.value;
+            let sex = this.userGender.current.value;
+            let phone = this.userPhone.current.value;
+            console.log(name,age,sex,phone);
+            if(name.trim()===""){
+                alert("请输入姓名");
+                return false;
+            }else if(age.trim()===""){
+                alert("请输入年龄");
+                return false;
+            }else if(sex.trim()===""){
+                alert("请选择性别");
+                return false;
+            }else if(phone.trim()===""){
+                alert("请输入电话");
+                return false;
+            }
+            this.props.addUserFunc({name,age,sex,phone});
+            //清空输入框
+            this.userName.current.value = "";
+            this.userAge.current.value = "";
+            this.userGender.current.value = "";
+            this.userPhone.current.value = "";
+        }
+    }
+
+    ReactDOM.render(
+        <App />,
+        document.getElementById("root")
+    );
+</script>
+
+</body>
+</html>
